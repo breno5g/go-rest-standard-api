@@ -19,6 +19,10 @@ var (
 	updateTaskRe = regexp.MustCompile(`^\/task\/(\d+)$`)
 )
 
+type response struct {
+	Message string `json:"message"`
+}
+
 type TaskHandler struct{}
 
 func (h *TaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +64,7 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 	model.Create(title, description)
 
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, "Task created successfully!")
+	json.NewEncoder(w).Encode(response{Message: "Task created successfully"})
 }
 
 func (h *TaskHandler) Get(w http.ResponseWriter, r *http.Request) {
