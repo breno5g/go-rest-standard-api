@@ -28,3 +28,15 @@ func List() []entities.Task {
 
 	return tasks
 }
+
+func Create(title, description string) {
+	db := infra.ConnectWithDatabase()
+	defer db.Close()
+
+	insert, err := db.Prepare("INSERT INTO tasks(title, description) VALUES($1, $2)")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	insert.Exec(title, description)
+}
