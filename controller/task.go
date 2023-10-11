@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strconv"
 
 	"github.com/breno5g/rest-standard-go-api/entities"
 	"github.com/breno5g/rest-standard-go-api/model"
@@ -26,7 +27,7 @@ func (h *TaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case r.Method == "GET" && listTaskRe.MatchString(r.URL.Path):
 		h.List(w, r)
 	case r.Method == "GET" && getTaskRe.MatchString(r.URL.Path):
-		fmt.Fprintln(w, "GET")
+		h.Get(w, r)
 	case r.Method == "POST" && createTaskRe.MatchString(r.URL.Path):
 		h.Create(w, r)
 	case r.Method == "DELETE" && deleteTaskRe.MatchString(r.URL.Path):
@@ -60,4 +61,23 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	fmt.Fprintf(w, "Task created successfully!")
+}
+
+func (h *TaskHandler) Get(w http.ResponseWriter, r *http.Request) {
+	match := getTaskRe.FindStringSubmatch(r.URL.Path)
+	if match == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	id, err := strconv.Atoi(match[1])
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	task := model.Get(id)
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(task)
 }

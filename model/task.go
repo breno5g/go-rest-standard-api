@@ -40,3 +40,17 @@ func Create(title, description string) {
 
 	insert.Exec(title, description)
 }
+
+func Get(id int) entities.Task {
+	db := infra.ConnectWithDatabase()
+	defer db.Close()
+
+	var task entities.Task
+
+	err := db.QueryRow("SELECT * FROM tasks WHERE id = $1", id).Scan(&task.ID, &task.Title, &task.Description)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return task
+}
