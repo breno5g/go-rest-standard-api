@@ -1,9 +1,12 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
+
+	"github.com/breno5g/rest-standard-go-api/model"
 )
 
 var (
@@ -20,7 +23,7 @@ func (h *TaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 	switch {
 	case r.Method == "GET" && listTaskRe.MatchString(r.URL.Path):
-		fmt.Fprintln(w, "GET")
+		h.List(w, r)
 	case r.Method == "GET" && getTaskRe.MatchString(r.URL.Path):
 		fmt.Fprintln(w, "GET")
 	case r.Method == "POST" && createTaskRe.MatchString(r.URL.Path):
@@ -32,4 +35,11 @@ func (h *TaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.NotFound(w, r)
 	}
+}
+
+func (h *TaskHandler) List(w http.ResponseWriter, r *http.Request) {
+	tasks := model.List()
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(tasks)
 }
