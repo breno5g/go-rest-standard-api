@@ -66,3 +66,15 @@ func Delete(id int) {
 
 	delete.Exec(id)
 }
+
+func Update(id int, title, description string) {
+	db := infra.ConnectWithDatabase()
+	defer db.Close()
+
+	update, err := db.Prepare("UPDATE tasks SET title = $1, description = $2 WHERE id = $3")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	update.Exec(title, description, id)
+}

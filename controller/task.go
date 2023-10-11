@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -37,7 +36,7 @@ func (h *TaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case r.Method == "DELETE" && deleteTaskRe.MatchString(r.URL.Path):
 		h.Delete(w, r)
 	case r.Method == "PUT" && updateTaskRe.MatchString(r.URL.Path):
-		fmt.Fprintln(w, "PUT")
+		h.Update(w, r)
 	default:
 		http.NotFound(w, r)
 	}
@@ -108,4 +107,33 @@ func (h *TaskHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response{Message: "Task deleted successfully"})
+}
+
+func (h *TaskHandler) Update(w http.ResponseWriter, r *http.Request) {
+	match := updateTaskRe.FindStringSubmatch(r.URL.Path)
+	if match == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	id, err := strconv.Atoi(match[1])
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	var task entities.Task
+
+	err = json.NewDecoder(r.Body).Decode(&task)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	title := task.Title
+	description := task.Description
+
+	model.Update(id, title, description)
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response{Message: "Task updated successfully"})
 }
