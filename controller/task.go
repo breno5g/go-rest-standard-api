@@ -3,6 +3,13 @@ package controller
 import (
 	"fmt"
 	"net/http"
+	"regexp"
+)
+
+var (
+	listTaskRe   = regexp.MustCompile(`^\/task[\/]*$`)
+	getTaskRe    = regexp.MustCompile(`^\/task\/(\d+)$`)
+	createTaskRe = regexp.MustCompile(`^\/task[\/]*$`)
 )
 
 type TaskHandler struct{}
@@ -10,15 +17,13 @@ type TaskHandler struct{}
 func (h *TaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 	switch {
-	case r.Method == "GET":
+	case r.Method == "GET" && listTaskRe.MatchString(r.URL.Path):
 		fmt.Fprintln(w, "GET")
-	case r.Method == "POST":
+	case r.Method == "GET" && getTaskRe.MatchString(r.URL.Path):
+		fmt.Fprintln(w, "GET")
+	case r.Method == "POST" && createTaskRe.MatchString(r.URL.Path):
 		fmt.Fprintln(w, "POST")
-	case r.Method == "PUT":
-		fmt.Fprintln(w, "PUT")
-	case r.Method == "DELETE":
-		fmt.Fprintln(w, "DELETE")
 	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.NotFound(w, r)
 	}
 }
