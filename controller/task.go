@@ -35,7 +35,7 @@ func (h *TaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case r.Method == "POST" && createTaskRe.MatchString(r.URL.Path):
 		h.Create(w, r)
 	case r.Method == "DELETE" && deleteTaskRe.MatchString(r.URL.Path):
-		fmt.Fprintln(w, "DELETE")
+		h.Delete(w, r)
 	case r.Method == "PUT" && updateTaskRe.MatchString(r.URL.Path):
 		fmt.Fprintln(w, "PUT")
 	default:
@@ -82,6 +82,30 @@ func (h *TaskHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	task := model.Get(id)
 
+	if task.ID == 0 {
+		http.NotFound(w, r)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(task)
+}
+
+func (h *TaskHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	match := deleteTaskRe.FindStringSubmatch(r.URL.Path)
+	if match == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	id, err := strconv.Atoi(match[1])
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	model.Delete(id)
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response{Message: "Task deleted successfully"})
 }

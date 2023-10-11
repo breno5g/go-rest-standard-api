@@ -49,8 +49,20 @@ func Get(id int) entities.Task {
 
 	err := db.QueryRow("SELECT * FROM tasks WHERE id = $1", id).Scan(&task.ID, &task.Title, &task.Description)
 	if err != nil {
-		panic(err.Error())
+		return entities.Task{}
 	}
 
 	return task
+}
+
+func Delete(id int) {
+	db := infra.ConnectWithDatabase()
+	defer db.Close()
+
+	delete, err := db.Prepare("DELETE FROM tasks WHERE id = $1")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	delete.Exec(id)
 }
